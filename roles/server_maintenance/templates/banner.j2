@@ -1,0 +1,9 @@
+========================================
+  Serveur : {{ inventory_hostname }}
+  OS      : {{ ansible_distribution }} {{ ansible_distribution_version }}
+  Famille : {{ ansible_os_family }}
+  IP      : {{ ansible_default_ipv4.address | default('N/A') }}
+  Date    : {{ ansible_date_time.date }}
+========================================
+  ACCES RESERVE - Toute connexion est journalisee
+========================================
