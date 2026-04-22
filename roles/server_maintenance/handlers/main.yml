@@ -1,5 +1,7 @@
 ---
 - name: restart sshd
-  ansible.builtin.systemd:
+  ansible.builtin.service:
     name: sshd
     state: restarted
+  when: init_system.stdout | default('') == 'systemd'
+  ignore_errors: yes

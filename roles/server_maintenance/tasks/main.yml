@@ -1,7 +1,7 @@
 ---
-# ========================================
-# TACHE 1 : Mise a jour du cache
-# ========================================
+# ============================================
+# MISE A JOUR DU CACHE
+# ============================================
 - name: "[Common] Mise a jour du cache APT (Debian/Ubuntu)"
   ansible.builtin.apt:
     update_cache: yes
@@ -13,56 +13,73 @@
     update_cache: yes
   when: ansible_os_family == "RedHat"
 
-# ========================================
-# TACHE 2 : Installation des paquets de base
-# ========================================
-- name: "[Base] Installation des paquets de base (Debian/Ubuntu)"
-  ansible.builtin.apt:
-    name: "{{ base_packages_debian }}"
-    state: present
-  when: ansible_os_family == "Debian"
-
-- name: "[Base] Installation des paquets de base (RedHat/Rocky)"
-  ansible.builtin.dnf:
-    name: "{{ base_packages_redhat }}"
-    state: present
-  when: ansible_os_family == "RedHat"
-
-# ========================================
-# TACHE 3 : Installation des outils de monitoring
-# ========================================
+# ============================================
+# EPEL - DOIT ETRE AVANT LES PAQUETS (Rocky)
+# ============================================
 - name: "[Monitoring] Installation EPEL repo (RedHat/Rocky)"
   ansible.builtin.dnf:
     name: epel-release
     state: present
   when: ansible_os_family == "RedHat"
 
-- name: "[Monitoring] Installation des outils de monitoring (Debian/Ubuntu)"
+# ============================================
+# PAQUETS DE BASE
+# ============================================
+- name: "[Base] Installation des paquets de base (Debian/Ubuntu)"
   ansible.builtin.apt:
-    name: "{{ monitoring_packages_debian }}"
+    name:
+      - vim
+      - htop
+      - curl
+      - wget
+      - net-tools
+      - tree
     state: present
   when: ansible_os_family == "Debian"
-  ignore_errors: yes
+
+- name: "[Base] Installation des paquets de base (RedHat/Rocky)"
+  ansible.builtin.dnf:
+    name:
+      - vim
+      - htop
+      - wget
+      - net-tools
+      - tree
+    state: present
+    allowerasing: yes
+  when: ansible_os_family == "RedHat"
+
+# ============================================
+# MONITORING
+# ============================================
+- name: "[Monitoring] Installation des outils de monitoring (Debian/Ubuntu)"
+  ansible.builtin.apt:
+    name:
+      - sysstat
+      - iotop
+      - nmon
+    state: present
+  when: ansible_os_family == "Debian"
 
 - name: "[Monitoring] Installation des outils de monitoring (RedHat/Rocky)"
   ansible.builtin.dnf:
-    name: "{{ monitoring_packages_redhat }}"
+    name:
+      - sysstat
+      - iotop
     state: present
   when: ansible_os_family == "RedHat"
-  ignore_errors: yes
 
-# ========================================
-# TACHE 4 : Banniere SSH
-# ========================================
+# ============================================
+# BANNIERE SSH
+# ============================================
 - name: "[SSH] Deploiement de la banniere SSH"
   ansible.builtin.template:
-    src: ssh_banner.j2
+    src: banner.j2
     dest: "{{ ssh_banner_file }}"
     owner: root
     group: root
     mode: '0644'
-  when: ssh_banner_enabled
-  notify: restart sshd
+  when: ssh_banner_enabled | bool
 
 - name: "[SSH] Activation de la banniere dans sshd_config"
   ansible.builtin.lineinfile:
@@ -70,31 +87,41 @@
     regexp: '^#?Banner'
     line: "Banner {{ ssh_banner_file }}"
     state: present
-    backup: yes
-  when: ssh_banner_enabled
+  when: ssh_banner_enabled | bool
   notify: restart sshd
 
-# ========================================
-# TACHE 5 : Activation des services
-# ========================================
+# ============================================
+# DETECTION SYSTEMD
+# ============================================
+- name: "[System] Verifier si systemd est actif"
+  ansible.builtin.command: ps -p 1 -o comm=
+  register: init_system
+  changed_when: false
+  ignore_errors: true
+
+# ============================================
+# SERVICES (uniquement si systemd)
+# ============================================
 - name: "[Service] Activation de sysstat"
   ansible.builtin.systemd:
     name: sysstat
-    enabled: yes
     state: started
+    enabled: yes
+  when: init_system.stdout | default('') == 'systemd'
   ignore_errors: yes
 
 - name: "[Service] Activation de Chrony (RedHat)"
   ansible.builtin.systemd:
     name: chronyd
-    enabled: yes
     state: started
-  when: ansible_os_family == "RedHat"
-  ignore_errors: yes
+    enabled: yes
+  when:
+    - ansible_os_family == "RedHat"
+    - init_system.stdout | default('') == 'systemd'
 
-# ========================================
-# TACHE 6 : Resume
-# ========================================
+# ============================================
+# RESUME
+# ============================================
 - name: "[Info] Resume de la maintenance"
   ansible.builtin.debug:
     msg: |
@@ -103,4 +130,5 @@
       OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
       Famille: {{ ansible_os_family }}
       Banniere SSH: {{ 'Activee' if ssh_banner_enabled else 'Desactivee' }}
+      Systemd: {{ 'Oui' if init_system.stdout | default('') == 'systemd' else 'Non (conteneur)' }}
       ========================================
