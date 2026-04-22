@@ -1,0 +1,39 @@
+---
+# === Paquets de base ===
+base_packages_debian:
+  - vim
+  - curl
+  - wget
+  - htop
+  - net-tools
+  - tree
+  - unzip
+  - git
+  - tmux
+
+base_packages_redhat:
+  - vim-enhanced
+  - curl
+  - wget
+  - htop
+  - net-tools
+  - tree
+  - unzip
+  - git
+  - tmux
+  - chrony
+
+# === Outils de monitoring ===
+monitoring_packages_debian:
+  - sysstat
+  - iotop
+
+monitoring_packages_redhat:
+  - sysstat
+  - iotop
+
+# === Banniere SSH ===
+ssh_banner_enabled: true
+ssh_banner_file: /etc/ssh/banner
+company_name: "InfraCloud"
+company_environment: "Production"

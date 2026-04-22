@@ -1,0 +1,106 @@
+---
+# ========================================
+# TACHE 1 : Mise a jour du cache
+# ========================================
+- name: "[Common] Mise a jour du cache APT (Debian/Ubuntu)"
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: "[Common] Mise a jour du cache DNF (RedHat/Rocky)"
+  ansible.builtin.dnf:
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+# ========================================
+# TACHE 2 : Installation des paquets de base
+# ========================================
+- name: "[Base] Installation des paquets de base (Debian/Ubuntu)"
+  ansible.builtin.apt:
+    name: "{{ base_packages_debian }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: "[Base] Installation des paquets de base (RedHat/Rocky)"
+  ansible.builtin.dnf:
+    name: "{{ base_packages_redhat }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+# ========================================
+# TACHE 3 : Installation des outils de monitoring
+# ========================================
+- name: "[Monitoring] Installation EPEL repo (RedHat/Rocky)"
+  ansible.builtin.dnf:
+    name: epel-release
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: "[Monitoring] Installation des outils de monitoring (Debian/Ubuntu)"
+  ansible.builtin.apt:
+    name: "{{ monitoring_packages_debian }}"
+    state: present
+  when: ansible_os_family == "Debian"
+  ignore_errors: yes
+
+- name: "[Monitoring] Installation des outils de monitoring (RedHat/Rocky)"
+  ansible.builtin.dnf:
+    name: "{{ monitoring_packages_redhat }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+  ignore_errors: yes
+
+# ========================================
+# TACHE 4 : Banniere SSH
+# ========================================
+- name: "[SSH] Deploiement de la banniere SSH"
+  ansible.builtin.template:
+    src: ssh_banner.j2
+    dest: "{{ ssh_banner_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: ssh_banner_enabled
+  notify: restart sshd
+
+- name: "[SSH] Activation de la banniere dans sshd_config"
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Banner'
+    line: "Banner {{ ssh_banner_file }}"
+    state: present
+    backup: yes
+  when: ssh_banner_enabled
+  notify: restart sshd
+
+# ========================================
+# TACHE 5 : Activation des services
+# ========================================
+- name: "[Service] Activation de sysstat"
+  ansible.builtin.systemd:
+    name: sysstat
+    enabled: yes
+    state: started
+  ignore_errors: yes
+
+- name: "[Service] Activation de Chrony (RedHat)"
+  ansible.builtin.systemd:
+    name: chronyd
+    enabled: yes
+    state: started
+  when: ansible_os_family == "RedHat"
+  ignore_errors: yes
+
+# ========================================
+# TACHE 6 : Resume
+# ========================================
+- name: "[Info] Resume de la maintenance"
+  ansible.builtin.debug:
+    msg: |
+      ========================================
+      Maintenance terminee sur {{ inventory_hostname }}
+      OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+      Famille: {{ ansible_os_family }}
+      Banniere SSH: {{ 'Activee' if ssh_banner_enabled else 'Desactivee' }}
+      ========================================

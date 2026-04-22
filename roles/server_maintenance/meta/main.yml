@@ -1,0 +1,25 @@
+galaxy_info:
+  author: Equipe DevOps InfraCloud
+  description: >
+    Role de maintenance serveur : installation de paquets de base,
+    configuration de banniere SSH et deploiement d'outils de monitoring.
+  company: InfraCloud
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.14"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+
+  galaxy_tags:
+    - maintenance
+    - monitoring
+    - ssh
+
+dependencies: []

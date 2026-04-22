@@ -1,0 +1,48 @@
+---
+- name: "InfraCloud - Maintenance complete des serveurs"
+  hosts: all
+  become: yes
+  collections:
+    - infracloud.utils
+
+  vars:
+    company_name: "InfraCloud"
+    company_environment: "Production"
+    ssh_banner_enabled: true
+    disk_check_threshold: 80
+
+  tasks:
+    - name: "Phase 1 : Execution du role de maintenance"
+      ansible.builtin.include_role:
+        name: infracloud.utils.server_maintenance
+
+    - name: "Phase 2 : Verification espace disque /"
+      infracloud.utils.check_disk:
+        path: "/"
+        threshold: "{{ disk_check_threshold }}"
+      register: disk_root
+
+    - name: "Resultat disque /"
+      ansible.builtin.debug:
+        msg: "{{ disk_root.message }}"
+
+    - name: "Phase 2b : Verification espace disque /var"
+      infracloud.utils.check_disk:
+        path: "/var"
+        threshold: "{{ disk_check_threshold }}"
+      register: disk_var
+
+    - name: "Resultat disque /var"
+      ansible.builtin.debug:
+        msg: "{{ disk_var.message }}"
+
+    - name: "Phase 3 : Rapport final"
+      ansible.builtin.debug:
+        msg: |
+          ==========================================
+          RAPPORT DE MAINTENANCE - {{ inventory_hostname }}
+          OS      : {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Disque / : {{ disk_root.usage_percent }}% ({{ disk_root.free_gb }} Go libre)
+          Disque /var : {{ disk_var.usage_percent }}% ({{ disk_var.free_gb }} Go libre)
+          Banniere SSH : {{ 'Activee' if ssh_banner_enabled else 'Desactivee' }}
+          ==========================================

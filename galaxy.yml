@@ -1,0 +1,33 @@
+namespace: infracloud
+name: utils
+version: 1.0.0
+readme: README.md
+
+authors:
+  - Votre Nom <votre.email@infracloud.com>
+
+description: >
+  Collection Ansible de l'equipe DevOps InfraCloud.
+  Contient des roles de maintenance serveur (paquets de base, monitoring, banniere SSH)
+  et un module custom de verification d'espace disque.
+
+license:
+  - GPL-3.0-or-later
+
+tags:
+  - maintenance
+  - monitoring
+  - ssh
+  - linux
+  - devops
+
+dependencies: {}
+
+repository: https://github.com/VOTRE_USERNAME/ansible-collection-infracloud-utils
+documentation: https://github.com/VOTRE_USERNAME/ansible-collection-infracloud-utils/blob/main/docs/usage.md
+homepage: https://github.com/VOTRE_USERNAME/ansible-collection-infracloud-utils
+issues: https://github.com/VOTRE_USERNAME/ansible-collection-infracloud-utils/issues
+
+build_ignore:
+  - .gitignore
+  - .git
