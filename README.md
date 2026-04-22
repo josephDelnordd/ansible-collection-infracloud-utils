@@ -17,12 +17,12 @@ Collection Ansible développée par l'équipe DevOps d'InfraCloud pour automatis
 ## Installation
 
 ```bash
-ansible-galaxy collection install infracloud.utils
+ansible-galaxy collection install josephdelnordd.utils
 ```
 Ou depuis GitHub :
 
 ```bash
-ansible-galaxy collection install git+https://github.com/VOTRE_USERNAME/ansible-collection-infracloud-utils.git
+ansible-galaxy collection install git+https://github.com/josephDelnordd/ansible-collection-infracloud-utils.git
 ```
 
 ## Utilisation
@@ -30,7 +30,7 @@ ansible-galaxy collection install git+https://github.com/VOTRE_USERNAME/ansible-
 ```yaml
 - hosts: all
   collections:
-    - infracloud.utils
+    - josephdelnordd.utils
   roles:
     - server_maintenance
 ```

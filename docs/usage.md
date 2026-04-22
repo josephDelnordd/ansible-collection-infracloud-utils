@@ -5,7 +5,7 @@
 ### Depuis Ansible Galaxy
 
 ```bash
-ansible-galaxy collection install infracloud.utils
+ansible-galaxy collection install josephdelnordd.utils
 ```
 
 ### Depuis GitHub
@@ -17,7 +17,7 @@ ansible-galaxy collection install git+https://github.com/VOTRE_USERNAME/ansible-
 ### Depuis un fichier tar.gz
 
 ```bash
-ansible-galaxy collection install infracloud-utils-1.0.0.tar.gz
+ansible-galaxy collection install josephdelnordd-utils-1.0.0.tar.gz
 ```
 
 ## Rôle : server_maintenance
@@ -37,7 +37,7 @@ company_environment	| Production	| Environnement affiché |
 - hosts: webservers
   become: yes
   roles:
-    - role: infracloud.utils.server_maintenance
+    - role: josephdelnordd.utils.server_maintenance
       vars:
         company_environment: "Staging"
 ```
@@ -55,9 +55,8 @@ threshold | non | 80 | Seuil d'alerte (%) |
 
 ```yaml
 - name: Vérifier l'espace disque
-  infracloud.utils.check_disk:
+  josephdelnordd.utils.check_disk:
     path: "/"
     threshold: 85
   register: result
 ```
-
